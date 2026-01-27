@@ -100,8 +100,8 @@ export default function CustomCursor() {
       const isInteractive =
         target.tagName === "A" ||
         target.tagName === "BUTTON" ||
-        target.closest("a") ||
-        target.closest("button") ||
+        !!target.closest("a") ||
+        !!target.closest("button") ||
         target.dataset.cursorHover === "true" ||
         target.classList.contains("cursor-hover") ||
         window.getComputedStyle(target).cursor === "pointer";
