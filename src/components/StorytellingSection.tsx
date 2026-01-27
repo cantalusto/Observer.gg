@@ -375,18 +375,186 @@ export default function StorytellingSection() {
         </motion.div>
 
         {/* === MOBILE === */}
-        <div className="absolute inset-0 md:hidden -z-10">
+        <div className="absolute inset-0 md:hidden">
+          {/* === Features com MonsterScrubbing de fundo (0-70%) === */}
           <motion.div
             className="absolute inset-0"
-            style={{
-              scale: eyeZoomScale,
-              opacity: eyeZoomOpacity,
-              transformOrigin: "52% 25%",
+            style={{ 
+              opacity: useTransform(scrollYProgress, [0, 0.65, 0.72], [1, 1, 0]),
+              zIndex: 20
             }}
           >
-            <MonsterScrubbing progress={monsterProgress} />
+            {/* MonsterScrubbing de fundo */}
+            <div className="absolute inset-0">
+              <MonsterScrubbing progress={useTransform(scrollYProgress, [0, 0.65], [0, 0.7])} />
+              {/* Overlay escuro sobre o monster */}
+              <div className="absolute inset-0 bg-[#040604]/75" />
+            </div>
+            
+            {/* Vinheta sutil nas bordas */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `
+                  linear-gradient(to bottom, #040604 0%, transparent 8%, transparent 92%, #040604 100%),
+                  linear-gradient(to right, #040604 0%, transparent 5%, transparent 95%, #040604 100%)
+                `,
+              }}
+            />
+            
+            {/* Header "Por que escolher o Observer" */}
+            <motion.div
+              className="absolute top-6 left-0 right-0 text-center z-30"
+              style={{
+                opacity: useTransform(scrollYProgress, [0, 0.05, 0.6, 0.65], [0, 1, 1, 0]),
+              }}
+            >
+              <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-moss-500">
+                Por que escolher o Observer
+              </span>
+            </motion.div>
+
+            {/* Cards centralizados */}
+            <div className="absolute inset-0 flex items-center justify-center px-5 pt-12 pb-8">
+              {features.map((feature, index) => {
+                const totalFeatures = features.length;
+                const featureRange = 0.55; // 0% a 55% = 55%
+                const featureStart = 0.05;
+                
+                const startProgress = featureStart + (index / totalFeatures) * featureRange;
+                const endProgress = featureStart + ((index + 1) / totalFeatures) * featureRange;
+
+                return (
+                  <motion.div
+                    key={index}
+                    className="absolute inset-x-5 flex items-center justify-center"
+                    style={{
+                      opacity: useTransform(
+                        scrollYProgress,
+                        [startProgress, startProgress + 0.03, endProgress - 0.03, endProgress],
+                        [0, 1, 1, 0]
+                      ),
+                      y: useTransform(
+                        scrollYProgress,
+                        [startProgress, startProgress + 0.03, endProgress - 0.03, endProgress],
+                        [40, 0, 0, -40]
+                      ),
+                      scale: useTransform(
+                        scrollYProgress,
+                        [startProgress, startProgress + 0.03, endProgress - 0.03, endProgress],
+                        [0.95, 1, 1, 0.95]
+                      ),
+                    }}
+                  >
+                    <div className="w-full max-w-sm rounded-lg border border-moss-700/30 bg-moss-950/90 p-5 backdrop-blur-sm shadow-[0_0_40px_rgba(4,6,4,0.8)]">
+                      {/* Número */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="font-mono text-3xl font-bold text-moss-700/50">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <div className="flex-1 h-px bg-gradient-to-r from-moss-600/50 to-transparent" />
+                      </div>
+
+                      {/* Tag */}
+                      <div className="mb-3 inline-block rounded-full border border-moss-600/40 bg-moss-900/60 px-3 py-1">
+                        <span className="text-[10px] font-medium uppercase tracking-widest text-moss-400">
+                          {feature.highlight}
+                        </span>
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="font-[family-name:var(--font-serif)] text-xl font-medium italic text-white leading-tight">
+                        {feature.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p className="mt-3 text-sm leading-relaxed text-moss-300/80">
+                        {feature.description}
+                      </p>
+
+                      {/* Details */}
+                      <ul className="mt-4 space-y-2">
+                        {feature.details.map((detail, i) => (
+                          <li key={i} className="flex items-center gap-2 text-xs text-moss-400">
+                            <span className="h-1 w-1 rounded-full bg-moss-500" />
+                            {detail}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Progress indicator */}
+                      <div className="mt-5 flex items-center gap-2">
+                        <div className="h-1 flex-1 overflow-hidden rounded-full bg-moss-900">
+                          <motion.div
+                            className="h-full rounded-full bg-gradient-to-r from-moss-600 to-moss-400"
+                            style={{
+                              width: useTransform(scrollYProgress, [startProgress, endProgress], ["0%", "100%"]),
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-moss-600">
+                          {index + 1} / {features.length}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Vinheta nas bordas */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `
+                  linear-gradient(to bottom, #040604 0%, transparent 12%, transparent 88%, #040604 100%),
+                  linear-gradient(to right, #040604 0%, transparent 8%, transparent 92%, #040604 100%)
+                `,
+              }}
+            />
           </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#040604]/95 via-[#040604]/85 to-[#040604]/70" />
+
+          {/* === FASE 3: Zoom no olho (70-85%) === */}
+          <motion.div
+            className="absolute inset-0"
+            style={{ 
+              opacity: useTransform(scrollYProgress, [0.65, 0.72, 0.8, 0.85], [0, 1, 1, 0]),
+              zIndex: useTransform(scrollYProgress, [0.65, 0.72, 0.85], [0, 30, 0])
+            }}
+          >
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                scale: useTransform(scrollYProgress, [0.7, 0.85], [1, 8]),
+                transformOrigin: "50% 35%",
+              }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-full h-full" style={{ transform: "scale(1.3)" }}>
+                  <MonsterScrubbing progress={useTransform(scrollYProgress, [0.7, 0.85], [0.7, 1])} />
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Glow do olho */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none flex items-start justify-center"
+              style={{
+                opacity: useTransform(scrollYProgress, [0.72, 0.78, 0.85], [0, 1, 0]),
+                paddingTop: '30%',
+              }}
+            >
+              <motion.div
+                className="w-32 h-32 rounded-full"
+                style={{
+                  background: `radial-gradient(circle, rgba(100, 255, 100, 0.9) 0%, rgba(74, 200, 74, 0.5) 30%, transparent 60%)`,
+                  filter: "blur(25px)",
+                  boxShadow: "0 0 100px rgba(74, 255, 74, 0.8), 0 0 180px rgba(74, 200, 74, 0.4)",
+                  scale: useTransform(scrollYProgress, [0.72, 0.85], [1, 4]),
+                }}
+              />
+            </motion.div>
+          </motion.div>
         </div>
 
         {/* === PARTÍCULAS DURANTE ZOOM === */}

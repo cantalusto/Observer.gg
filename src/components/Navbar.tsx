@@ -69,26 +69,26 @@ export default function Navbar() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="flex items-center justify-between px-4 py-5 md:px-8 lg:px-12">
+      <div className="flex items-center justify-between px-4 py-4 md:px-8 md:py-5 lg:px-12">
         {/* Left side - Logo + Menu with blur box */}
-        <div className="relative z-[60] flex items-center gap-5 rounded-md border border-moss-700/30 bg-moss-950/95 px-6 py-4 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md">
+        <div className="relative z-[60] flex items-center gap-3 rounded-md border border-moss-700/30 bg-moss-950/95 px-4 py-3 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md md:gap-5 md:px-6 md:py-4">
           {/* Logo */}
           <a href="/" className="flex items-center gap-1">
-            <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight text-white md:text-xl">
+            <span className="font-[family-name:var(--font-display)] text-base font-bold tracking-tight text-white md:text-xl">
               OBSERVER
             </span>
-            <span className="font-[family-name:var(--font-display)] text-lg font-bold text-moss-500 md:text-xl">
+            <span className="font-[family-name:var(--font-display)] text-base font-bold text-moss-500 md:text-xl">
               .GG
             </span>
           </a>
 
-          {/* Divider */}
-          <div className="h-5 w-px bg-moss-700/50" />
+          {/* Divider - hidden on mobile */}
+          <div className="hidden h-5 w-px bg-moss-700/50 md:block" />
 
-          {/* Menu button */}
+          {/* Menu button - hidden on mobile */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="group flex items-center gap-2 transition-opacity hover:opacity-70"
+            className="group hidden items-center gap-2 transition-opacity hover:opacity-70 md:flex"
           >
             <svg
               className="h-3.5 w-3.5 text-white transition-transform group-hover:rotate-90"
@@ -100,6 +100,27 @@ export default function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
             <span className="text-sm font-medium uppercase tracking-widest text-white">Menu</span>
+          </button>
+
+          {/* Mobile hamburger menu */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center justify-center transition-opacity hover:opacity-70 md:hidden"
+            aria-label="Toggle menu"
+          >
+            <svg
+              className="h-5 w-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              {menuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
           </button>
         </div>
 
@@ -138,10 +159,10 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Right side - CTA with blur box */}
+        {/* Right side - CTA with blur box (hidden on mobile) */}
         <a
           href="#"
-          className="group relative z-[60] flex items-center gap-4 overflow-hidden rounded-md border border-moss-700/30 bg-moss-950/95 px-6 py-4 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md transition-all hover:border-moss-600/50 hover:bg-moss-900/90 hover:shadow-[0_0_40px_rgba(74,124,74,0.25)]"
+          className="group relative z-[60] hidden items-center gap-4 overflow-hidden rounded-md border border-moss-700/30 bg-moss-950/95 px-6 py-4 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md transition-all hover:border-moss-600/50 hover:bg-moss-900/90 hover:shadow-[0_0_40px_rgba(74,124,74,0.25)] md:flex"
         >
           {/* Container for rolling text effect */}
           <div className="relative h-5 overflow-hidden">

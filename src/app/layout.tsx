@@ -34,6 +34,11 @@ export const metadata: Metadata = {
     "melhorar elo",
     "rankeds",
   ],
+  icons: {
+    icon: "/browsericon.png",
+    shortcut: "/browsericon.png",
+    apple: "/browsericon.png",
+  },
 };
 
 export default function RootLayout({

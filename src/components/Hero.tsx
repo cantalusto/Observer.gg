@@ -79,7 +79,7 @@ export default function Hero() {
         <Navbar />
 
         {/* Main hero content */}
-        <main className="flex flex-1 flex-col items-center justify-center px-6 pb-20 md:px-12 lg:px-20">
+        <main className="flex flex-1 flex-col items-center justify-center px-6 pb-16 pt-8 md:px-12 md:pb-20 md:pt-0 lg:px-20">
           {/* Main headline row */}
           <motion.div
             className="flex flex-col items-center gap-1 overflow-visible"
@@ -87,13 +87,13 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
           >
-            {/* "Você perdeu." + "Mas sabe por quê?" */}
-            <div className="flex flex-col items-center gap-1 overflow-visible md:flex-row md:items-baseline md:gap-4">
-              <h1 className="font-[family-name:var(--font-serif)] text-4xl font-medium italic tracking-tight text-white md:text-5xl lg:text-6xl">
+            {/* Mobile: stacked layout / Desktop: inline */}
+            <div className="flex flex-col items-center gap-1 overflow-visible text-center md:flex-row md:items-baseline md:gap-4">
+              <h1 className="font-[family-name:var(--font-serif)] text-4xl font-medium italic tracking-tight text-white sm:text-5xl md:text-5xl lg:text-6xl">
                 Você perdeu.
               </h1>
               <span
-                className="font-[family-name:var(--font-serif)] text-4xl font-normal italic tracking-tight pr-2 md:text-5xl lg:text-6xl"
+                className="font-[family-name:var(--font-serif)] text-4xl font-normal italic tracking-tight sm:text-5xl md:text-5xl lg:text-6xl"
                 style={{
                   background: "linear-gradient(90deg, #6b966b, #98b898, #7cb87c, #a8cca8, #6b966b)",
                   backgroundSize: "300% 100%",
@@ -110,25 +110,25 @@ export default function Hero() {
             {/* "Não" fixo + texto ciclando */}
             <LayoutGroup>
               <motion.div
-                className="mt-4 flex items-baseline justify-center"
+                className="mt-3 flex flex-col items-center justify-center text-center md:mt-4 md:flex-row md:items-baseline"
                 style={{ perspective: "1000px" }}
                 layout
               >
                 <motion.span
                   layout="position"
-                  className="font-[family-name:var(--font-serif)] text-4xl font-medium italic tracking-tight text-white md:text-5xl lg:text-6xl"
+                  className="font-[family-name:var(--font-serif)] text-4xl font-medium italic tracking-tight text-white sm:text-5xl md:text-5xl lg:text-6xl"
                   transition={{
                     layout: { type: "spring", stiffness: 200, damping: 30 }
                   }}
                 >
-                  Não&nbsp;
+                  Não<span className="hidden md:inline">&nbsp;</span>
                 </motion.span>
                 <div className="relative">
                   <AnimatePresence mode="popLayout">
                     <motion.span
                       key={currentIndex}
                       layout
-                      className="inline-block font-[family-name:var(--font-serif)] text-4xl font-medium italic tracking-tight text-white md:text-5xl lg:text-6xl"
+                      className="inline-block font-[family-name:var(--font-serif)] text-4xl font-medium italic tracking-tight text-white sm:text-5xl md:text-5xl lg:text-6xl"
                       initial={variants.initial}
                       animate={variants.animate}
                       exit={variants.exit}
@@ -148,7 +148,7 @@ export default function Hero() {
             {/* CTA Button */}
             <motion.a
               href="#"
-              className="group relative z-[60] mt-12 flex items-center justify-between gap-8 overflow-hidden rounded-md border border-moss-700/30 bg-moss-950/95 px-6 py-4 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md transition-all hover:border-moss-600/50 hover:bg-moss-900/90 hover:shadow-[0_0_40px_rgba(74,124,74,0.25)]"
+              className="group relative z-[60] mt-8 flex w-full max-w-xs items-center justify-center gap-4 overflow-hidden rounded-md border border-moss-700/30 bg-moss-950/95 px-5 py-4 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md transition-all hover:border-moss-600/50 hover:bg-moss-900/90 hover:shadow-[0_0_40px_rgba(74,124,74,0.25)] sm:mt-10 sm:w-auto sm:max-w-none sm:justify-between sm:gap-8 sm:px-6 md:mt-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
@@ -158,11 +158,11 @@ export default function Hero() {
               {/* Container for rolling text effect */}
               <div className="relative h-5 overflow-hidden">
                 <div className="flex flex-col transition-transform duration-300 ease-out group-hover:-translate-y-1/2">
-                  <span className="flex h-5 items-center text-sm font-medium uppercase tracking-widest text-moss-200">
-                    Experimente gratuitamente
+                  <span className="flex h-5 items-center whitespace-nowrap text-xs font-medium uppercase tracking-widest text-moss-200 sm:text-sm">
+                    Experimente grátis
                   </span>
-                  <span className="flex h-5 items-center text-sm font-medium uppercase tracking-widest text-white">
-                    Experimente gratuitamente
+                  <span className="flex h-5 items-center whitespace-nowrap text-xs font-medium uppercase tracking-widest text-white sm:text-sm">
+                    Experimente grátis
                   </span>
                 </div>
               </div>
@@ -193,24 +193,24 @@ export default function Hero() {
             </motion.a>
           </motion.div>
 
-          {/* Info Card - Left side */}
+          {/* Info Card - Left side (mobile: bottom, desktop: bottom-left) */}
           <motion.div
-            className="absolute bottom-0 left-0 z-[60] max-w-sm rounded-tr-md border-r border-t border-moss-700/30 bg-moss-950/95 p-6 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
+            className="absolute bottom-0 left-0 right-0 z-[60] border-t border-moss-700/30 bg-moss-950/95 p-5 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md md:right-auto md:max-w-sm md:rounded-tr-md md:border-r md:border-t md:p-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1 }}
           >
-            <h3 className="font-[family-name:var(--font-serif)] text-xl font-medium italic text-white md:text-2xl">
+            <h3 className="font-[family-name:var(--font-serif)] text-lg font-medium italic text-white md:text-2xl">
               Descubra o que te faz perder
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-moss-300/80">
+            <p className="mt-2 text-xs leading-relaxed text-moss-300/80 md:mt-3 md:text-sm">
               Nossa IA analisa suas partidas em tempo real, identificando erros de posicionamento,
               decisões equivocadas e oportunidades perdidas. Pare de culpar o time e comece a evoluir
               com dados reais sobre seu gameplay.
             </p>
 
             {/* Animated arrow */}
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2 md:mt-4">
               <span className="text-xs font-medium uppercase tracking-widest text-moss-500">
                 Saiba mais
               </span>
@@ -226,8 +226,8 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* Floating elements decoration */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {/* Floating elements decoration (hidden on mobile) */}
+          <div className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block">
             <motion.div
               className="absolute left-[10%] top-[30%] h-24 w-24 opacity-10"
               animate={{ y: [0, -15, 0], rotate: [0, 180, 360] }}

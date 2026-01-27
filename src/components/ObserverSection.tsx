@@ -125,7 +125,7 @@ export default function ObserverSection() {
               alt=""
               width={1920}
               height={1080}
-              className="w-full max-w-none h-auto min-h-[80vh] object-contain scale-110"
+              className="w-full max-w-none h-auto min-h-[60vh] object-contain scale-125 md:min-h-[80vh] md:scale-110"
               style={{
                 filter: "drop-shadow(0 0 60px rgba(255, 50, 50, 0.5)) hue-rotate(-60deg) saturate(2)",
                 mixBlendMode: "screen",
@@ -143,7 +143,7 @@ export default function ObserverSection() {
               alt=""
               width={1920}
               height={1080}
-              className="w-full max-w-none h-auto min-h-[80vh] object-contain scale-110"
+              className="w-full max-w-none h-auto min-h-[60vh] object-contain scale-125 md:min-h-[80vh] md:scale-110"
               style={{
                 filter: "drop-shadow(0 0 60px rgba(50, 200, 255, 0.5)) hue-rotate(60deg) saturate(2)",
                 mixBlendMode: "screen",
@@ -159,7 +159,7 @@ export default function ObserverSection() {
               alt="O Observador"
               width={1920}
               height={1080}
-              className="w-full max-w-none h-auto min-h-[80vh] object-contain"
+              className="w-full max-w-none h-auto min-h-[60vh] object-contain scale-125 md:min-h-[80vh] md:scale-100"
               style={{
                 filter: glitchActive
                   ? "drop-shadow(0 0 80px rgba(74, 220, 74, 0.6)) brightness(1.3)"
@@ -172,7 +172,7 @@ export default function ObserverSection() {
           {/* Eye glow */}
           <div className="absolute top-[35%] left-1/2 -translate-x-1/2 pointer-events-none eye-pulse">
             <div
-              className="w-[200px] h-[60px] rounded-full"
+              className="w-[120px] h-[40px] rounded-full md:w-[200px] md:h-[60px]"
               style={{
                 background: "radial-gradient(ellipse, rgba(100, 255, 100, 0.6) 0%, transparent 70%)",
                 filter: "blur(20px)",
@@ -185,16 +185,21 @@ export default function ObserverSection() {
       {/* Scan lines */}
       <div className="absolute inset-0 pointer-events-none scan-lines" />
 
-      {/* Vinheta - stronger edge coverage */}
+      {/* Vinheta FORTE - foco no monstro e texto */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse 70% 60% at 50% 50%, transparent 20%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0.85) 100%),
-            radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(4, 6, 4, 0.6) 100%)
+            radial-gradient(ellipse 50% 40% at 50% 40%, transparent 5%, rgba(0, 0, 0, 0.4) 30%, rgba(0, 0, 0, 0.8) 55%, #030503 75%)
           `,
         }}
       />
+      
+      {/* Bordas extras escuras */}
+      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-[#030503] via-[#030503]/80 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#030503] via-[#030503]/60 to-transparent pointer-events-none" />
+      <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-[#030503] via-[#030503]/70 to-transparent pointer-events-none" />
+      <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-[#030503] via-[#030503]/70 to-transparent pointer-events-none" />
 
       {/* Fog layers */}
       <div className="absolute inset-0 pointer-events-none">
@@ -415,13 +420,13 @@ export default function ObserverSection() {
       </div>
 
       {/* Title */}
-      <div className="absolute inset-0 flex items-end justify-center pb-24 z-30">
-        <div className="text-center">
-          <h2 className="font-[family-name:var(--font-serif)] text-4xl font-medium italic text-white md:text-5xl lg:text-7xl drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+      <div className="absolute inset-0 flex items-end justify-center pb-16 z-30 md:pb-24">
+        <div className="text-center px-4">
+          <h2 className="font-[family-name:var(--font-serif)] text-3xl font-medium italic text-white md:text-5xl lg:text-7xl drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
             Conheça o{" "}
             <span className="text-shimmer">Observador</span>
           </h2>
-          <p className="mt-4 text-sm uppercase tracking-[0.3em] text-moss-400/60">
+          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-moss-400/60 md:mt-4 md:text-sm md:tracking-[0.3em]">
             Scroll para descobrir
           </p>
         </div>
