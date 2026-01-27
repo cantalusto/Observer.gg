@@ -4,6 +4,7 @@ import CustomCursor from "@/components/CustomCursor";
 import LoadingScreen from "@/components/LoadingScreen";
 import CinematicTransition from "@/components/CinematicTransition";
 import StorytellingSection from "@/components/StorytellingSection";
+import DeepDiveSection from "@/components/DeepDiveSection";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <Hero />
       <CinematicTransition />
       <StorytellingSection />
+      <DeepDiveSection />
     </main>
   );
 }

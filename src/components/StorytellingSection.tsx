@@ -9,7 +9,6 @@ const features = [
     title: "Análise que vai além dos números",
     description:
       "Não dizemos apenas o que aconteceu — explicamos por que você ganhou ou perdeu. Identificamos decisões invisíveis, erros mascarados por vitórias e acertos escondidos em derrotas.",
-    icon: "👁️",
     highlight: "Entenda o porquê",
     details: [
       "Análises causais, não apenas estatísticas",
@@ -21,7 +20,6 @@ const features = [
     title: "Seu perfil único de jogador",
     description:
       "Criamos seu DNA de jogador: agressividade, consistência, tomada de decisão. Acompanhe sua evolução real e veja previsões de onde você pode chegar.",
-    icon: "🧬",
     highlight: "Evolução personalizada",
     details: [
       "Curva de aprendizado por habilidade",
@@ -33,7 +31,6 @@ const features = [
     title: "Meta feito para você",
     description:
       "Esqueça tier lists genéricas. Recomendamos campeões e estratégias que combinam com seu estilo, com missões personalizadas para cada partida.",
-    icon: "🎯",
     highlight: "Recomendações inteligentes",
     details: [
       "Campeões ideais para seu perfil",
@@ -45,7 +42,6 @@ const features = [
     title: "Coach que conhece você",
     description:
       "Converse com uma IA que estudou seu histórico. Pergunte sobre builds, derrotas ou decisões — receba respostas baseadas nos seus dados, não em teoria genérica.",
-    icon: "💬",
     highlight: "Assistente pessoal",
     details: [
       "Respostas contextualizadas",
@@ -65,7 +61,7 @@ function FeatureCard({
   progress: ReturnType<typeof useTransform<number, number>>;
 }) {
   const totalFeatures = features.length;
-  const featuresEnd = 0.45; // Features ocupam 0-45%
+  const featuresEnd = 0.45;
 
   const startProgress = (index / totalFeatures) * featuresEnd;
   const endProgress = ((index + 1) / totalFeatures) * featuresEnd;
@@ -80,18 +76,26 @@ function FeatureCard({
   const cardY = useTransform(
     progress,
     [startProgress, startProgress + 0.03, endProgress - 0.03, endProgress],
-    [80, 0, 0, -80]
+    [50, 0, 0, -50]
   );
 
   const cardScale = useTransform(
     progress,
     [startProgress, startProgress + 0.03, endProgress - 0.03, endProgress],
-    [0.9, 1, 1, 0.9]
+    [0.97, 1, 1, 0.97]
   );
 
+  // Line reveal animation
+  const lineWidth = useTransform(
+    progress,
+    [startProgress, startProgress + 0.03],
+    ["0%", "100%"]
+  );
+
+  // Staggered details
   const detailsOpacity = useTransform(
     progress,
-    [startProgress + 0.03, startProgress + 0.06],
+    [startProgress + 0.02, startProgress + 0.04],
     [0, 1]
   );
 
@@ -101,30 +105,36 @@ function FeatureCard({
       style={{ opacity: cardOpacity, y: cardY, scale: cardScale }}
     >
       <div className="max-w-xl">
-        <motion.div className="mb-4 flex items-center gap-3">
-          <span className="font-mono text-5xl font-bold text-moss-700/50">
+        {/* Number with line */}
+        <div className="flex items-center gap-4 mb-6">
+          <span className="font-mono text-5xl font-bold text-moss-700/40">
             {String(index + 1).padStart(2, "0")}
           </span>
-          <div className="h-px flex-1 max-w-16 bg-gradient-to-r from-moss-600 to-transparent" />
-        </motion.div>
+          <motion.div 
+            className="h-px bg-gradient-to-r from-moss-600 to-transparent"
+            style={{ width: lineWidth, maxWidth: "4rem" }}
+          />
+        </div>
 
-        <div className="mb-4 text-5xl">{feature.icon}</div>
-
-        <div className="mb-4 inline-block rounded-full border border-moss-500/40 bg-moss-950/80 px-4 py-1.5 backdrop-blur-sm">
+        {/* Tag */}
+        <div className="mb-4 inline-block rounded-full border border-moss-600/40 bg-moss-950/60 px-4 py-1.5">
           <span className="text-xs font-medium uppercase tracking-widest text-moss-400">
             {feature.highlight}
           </span>
         </div>
 
-        <h3 className="font-[family-name:var(--font-serif)] text-2xl font-medium italic text-white md:text-3xl lg:text-4xl">
+        {/* Title */}
+        <h3 className="font-[family-name:var(--font-serif)] text-2xl font-medium italic text-white md:text-3xl lg:text-4xl leading-tight">
           {feature.title}
         </h3>
 
+        {/* Description */}
         <p className="mt-4 text-base leading-relaxed text-moss-300/80 md:text-lg">
           {feature.description}
         </p>
 
-        <motion.ul className="mt-6 space-y-2" style={{ opacity: detailsOpacity }}>
+        {/* Details */}
+        <motion.ul className="mt-6 space-y-2.5" style={{ opacity: detailsOpacity }}>
           {feature.details.map((detail, i) => (
             <li key={i} className="flex items-center gap-3 text-sm text-moss-400">
               <span className="h-1.5 w-1.5 rounded-full bg-moss-500" />
@@ -133,6 +143,7 @@ function FeatureCard({
           ))}
         </motion.ul>
 
+        {/* Progress bar */}
         <div className="mt-8 flex items-center gap-3">
           <div className="h-1 flex-1 max-w-48 overflow-hidden rounded-full bg-moss-900">
             <motion.div

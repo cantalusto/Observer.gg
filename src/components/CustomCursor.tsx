@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useCursor } from "@/contexts/CursorContext";
 
 export default function CustomCursor() {
-  const { mode } = useCursor();
+  const { mode, setIsClicking: setGlobalClicking } = useCursor();
   const cursorRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
@@ -20,20 +20,23 @@ export default function CustomCursor() {
 
   // Glitch effect for possessed mode
   useEffect(() => {
-    if (mode !== "possessed") {
+    if (mode !== "possessed" && mode !== "cta") {
       setGlitchOffset({ x: 0, y: 0 });
       return;
     }
 
+    const intensity = mode === "cta" ? 8 : 20;
+    const frequency = mode === "cta" ? 80 : 100;
+
     const glitchInterval = setInterval(() => {
-      if (Math.random() > 0.7) {
+      if (Math.random() > (mode === "cta" ? 0.5 : 0.7)) {
         setGlitchOffset({
-          x: (Math.random() - 0.5) * 20,
-          y: (Math.random() - 0.5) * 20,
+          x: (Math.random() - 0.5) * intensity,
+          y: (Math.random() - 0.5) * intensity,
         });
         setTimeout(() => setGlitchOffset({ x: 0, y: 0 }), 50);
       }
-    }, 100);
+    }, frequency);
 
     return () => clearInterval(glitchInterval);
   }, [mode]);
@@ -44,8 +47,8 @@ export default function CustomCursor() {
     const dot = dotRef.current;
 
     if (cursor && dot && isVisible) {
-      const easingOuter = mode === "possessed" ? 0.12 : 0.08;
-      const easingInner = mode === "possessed" ? 0.3 : 0.2;
+      const easingOuter = mode === "possessed" || mode === "cta" ? 0.12 : 0.08;
+      const easingInner = mode === "possessed" || mode === "cta" ? 0.3 : 0.2;
 
       cursorPos.current.x += (mousePos.current.x - cursorPos.current.x) * easingOuter;
       cursorPos.current.y += (mousePos.current.y - cursorPos.current.y) * easingOuter;
@@ -53,8 +56,8 @@ export default function CustomCursor() {
       dotPos.current.x += (mousePos.current.x - dotPos.current.x) * easingInner;
       dotPos.current.y += (mousePos.current.y - dotPos.current.y) * easingInner;
 
-      const gx = mode === "possessed" ? glitchOffset.x : 0;
-      const gy = mode === "possessed" ? glitchOffset.y : 0;
+      const gx = mode === "possessed" || mode === "cta" ? glitchOffset.x : 0;
+      const gy = mode === "possessed" || mode === "cta" ? glitchOffset.y : 0;
 
       cursor.style.left = `${cursorPos.current.x + gx}px`;
       cursor.style.top = `${cursorPos.current.y + gy}px`;
@@ -83,8 +86,14 @@ export default function CustomCursor() {
       }
     };
 
-    const onMouseDown = () => setIsClicking(true);
-    const onMouseUp = () => setIsClicking(false);
+    const onMouseDown = () => {
+      setIsClicking(true);
+      setGlobalClicking(true);
+    };
+    const onMouseUp = () => {
+      setIsClicking(false);
+      setGlobalClicking(false);
+    };
 
     const onMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -114,6 +123,7 @@ export default function CustomCursor() {
   }, [isVisible]);
 
   const isPossessed = mode === "possessed";
+  const isCTA = mode === "cta";
   const shouldShow = mode !== "hidden" && isVisible;
 
   return (
@@ -121,7 +131,7 @@ export default function CustomCursor() {
       {/* Main cursor ring */}
       <div
         ref={cursorRef}
-        className={`custom-cursor ${isHovering ? "hovering" : ""} ${isClicking ? "clicking" : ""} ${isPossessed ? "possessed" : ""}`}
+        className={`custom-cursor ${isHovering ? "hovering" : ""} ${isClicking ? "clicking" : ""} ${isPossessed ? "possessed" : ""} ${isCTA ? "cta-mode" : ""}`}
         style={{ opacity: shouldShow ? 1 : 0 }}
       >
         {isPossessed ? (
@@ -132,6 +142,12 @@ export default function CustomCursor() {
             <div className="cursor-veins vein-1" />
             <div className="cursor-veins vein-2" />
             <div className="cursor-veins vein-3" />
+          </>
+        ) : isCTA ? (
+          <>
+            <div className="cursor-cta-ring" />
+            <div className="cursor-cta-ring-2" />
+            <div className="cursor-cta-pulse" />
           </>
         ) : (
           <>
@@ -146,7 +162,7 @@ export default function CustomCursor() {
       {/* Center dot */}
       <div
         ref={dotRef}
-        className={`custom-cursor-dot ${isHovering ? "hovering" : ""} ${isClicking ? "clicking" : ""} ${isPossessed ? "possessed" : ""}`}
+        className={`custom-cursor-dot ${isHovering ? "hovering" : ""} ${isClicking ? "clicking" : ""} ${isPossessed ? "possessed" : ""} ${isCTA ? "cta-mode" : ""}`}
         style={{ opacity: shouldShow ? 1 : 0 }}
       />
 
@@ -377,6 +393,100 @@ export default function CustomCursor() {
 
         .custom-cursor.possessed.hovering .cursor-eye-pupil {
           transform: scaleY(1.3) scaleX(1.2);
+        }
+
+        /* ========== CTA MODE ========== */
+        .custom-cursor.cta-mode {
+          width: 70px;
+          height: 70px;
+        }
+
+        .cursor-cta-ring {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          border: 2px solid rgba(100, 255, 100, 0.8);
+          animation: cta-rotate 2s linear infinite;
+          box-shadow:
+            0 0 20px rgba(100, 255, 100, 0.5),
+            inset 0 0 20px rgba(100, 255, 100, 0.1);
+        }
+
+        .cursor-cta-ring-2 {
+          position: absolute;
+          inset: 8px;
+          border-radius: 50%;
+          border: 1px solid rgba(100, 255, 100, 0.4);
+          animation: cta-rotate 3s linear infinite reverse;
+        }
+
+        .cursor-cta-pulse {
+          position: absolute;
+          inset: 15px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(100, 255, 100, 0.2) 0%, transparent 70%);
+          animation: cta-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes cta-rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes cta-pulse {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .custom-cursor-dot.cta-mode {
+          width: 12px;
+          height: 12px;
+          background: rgba(100, 255, 100, 1);
+          box-shadow:
+            0 0 15px rgba(100, 255, 100, 1),
+            0 0 30px rgba(100, 255, 100, 0.8),
+            0 0 45px rgba(100, 255, 100, 0.5);
+          animation: cta-dot-glow 0.8s ease-in-out infinite;
+        }
+
+        @keyframes cta-dot-glow {
+          0%, 100% { 
+            box-shadow:
+              0 0 15px rgba(100, 255, 100, 1),
+              0 0 30px rgba(100, 255, 100, 0.8),
+              0 0 45px rgba(100, 255, 100, 0.5);
+          }
+          50% { 
+            box-shadow:
+              0 0 20px rgba(100, 255, 100, 1),
+              0 0 40px rgba(100, 255, 100, 0.9),
+              0 0 60px rgba(100, 255, 100, 0.6);
+          }
+        }
+
+        .custom-cursor.cta-mode.clicking {
+          width: 50px;
+          height: 50px;
+          transition: width 0.15s ease, height 0.15s ease;
+        }
+
+        .custom-cursor.cta-mode.clicking .cursor-cta-ring {
+          border-color: rgba(255, 255, 255, 1);
+          box-shadow:
+            0 0 30px rgba(100, 255, 100, 0.8),
+            0 0 60px rgba(100, 255, 100, 0.5),
+            inset 0 0 30px rgba(100, 255, 100, 0.3);
+          animation: cta-rotate 0.3s linear infinite;
+        }
+
+        .custom-cursor-dot.cta-mode.clicking {
+          width: 20px;
+          height: 20px;
+          background: rgba(255, 255, 255, 1);
+          box-shadow:
+            0 0 20px rgba(255, 255, 255, 1),
+            0 0 40px rgba(100, 255, 100, 1),
+            0 0 60px rgba(100, 255, 100, 0.8);
         }
 
         /* Hide on touch devices */
