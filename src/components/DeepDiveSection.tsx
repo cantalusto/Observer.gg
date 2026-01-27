@@ -167,21 +167,23 @@ function ScaryEye({
 // BOTÃO CTA ESPECIAL
 // ============================================
 function ScaryButton({ children }: { children: React.ReactNode }) {
-  const { setMode, isClicking } = useCursor();
+  const { mode, setMode, isClicking } = useCursor();
   const [isHovered, setIsHovered] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const previousModeRef = useRef(mode);
 
   return (
     <button
       ref={buttonRef}
       className="group relative overflow-hidden"
       onMouseEnter={() => {
+        previousModeRef.current = mode;
         setIsHovered(true);
         setMode("cta");
       }}
       onMouseLeave={() => {
         setIsHovered(false);
-        setMode("normal");
+        setMode(previousModeRef.current);
       }}
     >
       {/* Fundo principal */}
@@ -267,44 +269,6 @@ function ScaryButton({ children }: { children: React.ReactNode }) {
           ${isClicking ? 'opacity-100 scale-110' : 'opacity-0 scale-100'}
           transition-all duration-200
         `} />
-      </div>
-
-      {/* Olho observador no canto */}
-      <div className={`
-        absolute -right-2 -bottom-2 w-10 h-10 
-        transition-all duration-500 ease-out
-        ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}
-      `}>
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <ellipse
-            cx="50"
-            cy="50"
-            rx="45"
-            ry="30"
-            fill="rgba(4, 6, 4, 0.9)"
-            stroke="rgba(100, 180, 100, 0.6)"
-            strokeWidth="2"
-          />
-          <circle 
-            cx="50" 
-            cy="50" 
-            r="15" 
-            fill="rgba(50, 140, 50, 0.8)"
-            className={isClicking ? 'animate-pulse' : ''}
-          />
-          <circle 
-            cx="50" 
-            cy="50" 
-            r="6" 
-            fill="rgba(0, 0, 0, 0.9)"
-          />
-          <circle 
-            cx="47" 
-            cy="47" 
-            r="2" 
-            fill="rgba(100, 255, 100, 0.8)"
-          />
-        </svg>
       </div>
 
       {/* Styles */}

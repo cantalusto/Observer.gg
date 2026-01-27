@@ -489,8 +489,14 @@ export default function CustomCursor() {
             0 0 60px rgba(100, 255, 100, 0.8);
         }
 
-        /* Hide on touch devices */
+        /* Hide on touch devices and mobile */
         @media (hover: none) and (pointer: coarse) {
+          * { cursor: auto !important; }
+          .custom-cursor,
+          .custom-cursor-dot { display: none !important; }
+        }
+
+        @media (max-width: 768px) {
           * { cursor: auto !important; }
           .custom-cursor,
           .custom-cursor-dot { display: none !important; }
