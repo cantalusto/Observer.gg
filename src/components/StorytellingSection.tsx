@@ -179,8 +179,11 @@ export default function StorytellingSection() {
   // === ZOOM NO OLHO ===
   const eyeZoomScale = useTransform(scrollYProgress, [0.58, 0.78], [1, 15]);
   const eyeZoomOpacity = useTransform(scrollYProgress, [0.58, 0.62, 0.75, 0.8], [1, 1, 1, 0]);
-  const eyeZoomY = useTransform(scrollYProgress, [0.58, 0.78], ["0%", "30%"]);
-  const eyeZoomX = useTransform(scrollYProgress, [0.58, 0.78], ["0%", "-8%"]);
+  // Ajuste fino do zoom no olho:
+  // - eyeZoomY: movimento vertical durante zoom (positivo = move para baixo visualmente)
+  // - eyeZoomX: movimento horizontal durante zoom (negativo = move para esquerda visualmente)
+  const eyeZoomY = useTransform(scrollYProgress, [0.58, 0.78], ["0%", "25%"]);
+  const eyeZoomX = useTransform(scrollYProgress, [0.58, 0.78], ["0%", "0%"]);
 
   // === GLOW DO OLHO ===
   const eyeGlowOpacity = useTransform(scrollYProgress, [0.62, 0.72, 0.8], [0, 1, 0]);
@@ -219,7 +222,12 @@ export default function StorytellingSection() {
                 scale: eyeZoomScale,
                 y: eyeZoomY,
                 x: eyeZoomX,
-                transformOrigin: "38% 28%", // Foca no olho
+                // AJUSTE DO ZOOM NO OLHO:
+                // Primeiro valor = posição horizontal (0% esquerda, 100% direita)
+                // Segundo valor = posição vertical (0% topo, 100% fundo)
+                // Aumente o primeiro para mover o ponto de zoom para a DIREITA
+                // Aumente o segundo para mover o ponto de zoom para BAIXO
+                transformOrigin: "52% 25%",
               }}
             >
               <MonsterScrubbing progress={monsterProgress} />
@@ -228,8 +236,16 @@ export default function StorytellingSection() {
 
           {/* Glow do olho */}
           <motion.div
-            className="absolute inset-0 flex items-start justify-center pt-[25%] pointer-events-none"
-            style={{ opacity: eyeGlowOpacity, scale: eyeGlowScale }}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              opacity: eyeGlowOpacity,
+              scale: eyeGlowScale,
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              paddingTop: '22%',
+              paddingLeft: '4%', // Ajuste horizontal do glow
+            }}
           >
             <div
               className="w-24 h-24 rounded-full"
@@ -354,7 +370,7 @@ export default function StorytellingSection() {
             style={{
               scale: eyeZoomScale,
               opacity: eyeZoomOpacity,
-              transformOrigin: "38% 28%",
+              transformOrigin: "52% 25%",
             }}
           >
             <MonsterScrubbing progress={monsterProgress} />
@@ -367,16 +383,32 @@ export default function StorytellingSection() {
           className="pointer-events-none absolute inset-0 overflow-hidden"
           style={{ opacity: useTransform(scrollYProgress, [0.6, 0.7, 0.8], [0, 1, 0]) }}
         >
-          {[...Array(20)].map((_, i) => (
+          {[
+            { l: 20, t: 30, mx: 120, my: -80, o: 0.6 },
+            { l: 35, t: 45, mx: -90, my: 110, o: 0.8 },
+            { l: 50, t: 25, mx: 60, my: -130, o: 0.5 },
+            { l: 65, t: 55, mx: -140, my: 70, o: 0.7 },
+            { l: 25, t: 60, mx: 100, my: 90, o: 0.9 },
+            { l: 40, t: 35, mx: -70, my: -100, o: 0.6 },
+            { l: 55, t: 70, mx: 130, my: -60, o: 0.8 },
+            { l: 70, t: 40, mx: -110, my: 120, o: 0.5 },
+            { l: 30, t: 50, mx: 80, my: -90, o: 0.7 },
+            { l: 45, t: 65, mx: -60, my: 80, o: 0.9 },
+            { l: 60, t: 30, mx: 100, my: 110, o: 0.6 },
+            { l: 75, t: 55, mx: -120, my: -70, o: 0.8 },
+            { l: 22, t: 42, mx: 70, my: 100, o: 0.5 },
+            { l: 38, t: 58, mx: -80, my: -110, o: 0.7 },
+            { l: 52, t: 38, mx: 110, my: 60, o: 0.9 },
+          ].map((p, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 rounded-full bg-moss-400"
               style={{
-                left: `${15 + Math.random() * 70}%`,
-                top: `${20 + Math.random() * 60}%`,
-                x: useTransform(scrollYProgress, [0.6, 0.8], [0, (Math.random() - 0.5) * 300]),
-                y: useTransform(scrollYProgress, [0.6, 0.8], [0, (Math.random() - 0.5) * 300]),
-                opacity: 0.4 + Math.random() * 0.6,
+                left: `${p.l}%`,
+                top: `${p.t}%`,
+                x: useTransform(scrollYProgress, [0.6, 0.8], [0, p.mx]),
+                y: useTransform(scrollYProgress, [0.6, 0.8], [0, p.my]),
+                opacity: p.o,
               }}
             />
           ))}

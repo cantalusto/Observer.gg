@@ -1,12 +1,31 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
+
+// Partículas com valores fixos (evita hydration mismatch)
+const PARTICLES = [
+  { w: 1.5, h: 2.1, l: 12, t: 15 },
+  { w: 2.2, h: 1.8, l: 28, t: 45 },
+  { w: 1.8, h: 2.5, l: 45, t: 22 },
+  { w: 2.0, h: 1.6, l: 62, t: 68 },
+  { w: 1.3, h: 2.3, l: 78, t: 35 },
+  { w: 2.5, h: 1.9, l: 91, t: 82 },
+  { w: 1.7, h: 2.0, l: 35, t: 91 },
+  { w: 2.1, h: 1.5, l: 55, t: 12 },
+  { w: 1.9, h: 2.4, l: 8, t: 55 },
+  { w: 2.3, h: 1.7, l: 72, t: 78 },
+];
 
 export default function NoiseBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [flashActive, setFlashActive] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
+  // Marca quando estamos no cliente
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Noise no canvas - otimizado para não travar o cursor
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -15,155 +34,153 @@ export default function NoiseBackground() {
     if (!ctx) return;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Usa resolução menor para melhor performance
+      const scale = 0.5;
+      canvas.width = window.innerWidth * scale;
+      canvas.height = window.innerHeight * scale;
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
     };
     resize();
     window.addEventListener("resize", resize);
 
-    let timeoutId: ReturnType<typeof setTimeout>;
+    let animationId: number;
+    let lastTime = 0;
+    const FPS = 15; // Limita a 15fps para economizar CPU
+    const frameInterval = 1000 / FPS;
 
-    // Box-Muller transform para distribuição Gaussiana
-    const gaussianRandom = () => {
-      let u = 0, v = 0;
-      while (u === 0) u = Math.random();
-      while (v === 0) v = Math.random();
-      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-    };
+    // Pré-aloca o imageData para evitar GC
+    let imageData: ImageData | null = null;
 
-    const renderGrain = () => {
+    const renderGrain = (currentTime: number) => {
+      animationId = requestAnimationFrame(renderGrain);
+
+      // Limita FPS
+      if (currentTime - lastTime < frameInterval) return;
+      lastTime = currentTime;
+
       const width = canvas.width;
       const height = canvas.height;
-      const imageData = ctx.createImageData(width, height);
+
+      // Cria imageData apenas se necessário
+      if (!imageData || imageData.width !== width || imageData.height !== height) {
+        imageData = ctx.createImageData(width, height);
+      }
+
       const data = imageData.data;
+      const len = data.length;
 
-      for (let i = 0; i < data.length; i += 4) {
-        // Gaussian noise - distribuição normal centrada em 0
-        const noise = gaussianRandom();
-
-        // Apenas grãos visíveis (|noise| > 1.8 = ~7% dos valores)
-        if (Math.abs(noise) > 1.8) {
-          // Mapear para brilho (0-255) com distribuição gaussiana
-          const brightness = Math.min(255, Math.max(0,
-            128 + noise * 35
-          ));
-
-          // Adiciona um leve tom verde ao ruído para atmosfera
-          const greenTint = Math.random() > 0.85;
-          data[i] = greenTint ? brightness * 0.7 : brightness;       // R
-          data[i + 1] = brightness;   // G
-          data[i + 2] = greenTint ? brightness * 0.7 : brightness;   // B
-          data[i + 3] = 30 + Math.abs(noise) * 25; // Alpha mais sutil
+      // Loop otimizado - processa em chunks de 4 (RGBA)
+      for (let i = 0; i < len; i += 4) {
+        // Usa operação simples ao invés de gaussiana
+        if (Math.random() > 0.97) {
+          const brightness = 100 + Math.random() * 80;
+          data[i] = brightness;
+          data[i + 1] = brightness;
+          data[i + 2] = brightness;
+          data[i + 3] = 25 + Math.random() * 20;
+        } else {
+          data[i + 3] = 0; // Transparente
         }
       }
 
       ctx.putImageData(imageData, 0, 0);
-
-      // Próximo frame em intervalo irregular mais lento (150ms a 400ms)
-      const nextDelay = 40 + Math.random() * 110;
-      timeoutId = setTimeout(renderGrain, nextDelay);
     };
 
-    renderGrain();
+    animationId = requestAnimationFrame(renderGrain);
 
     return () => {
       window.removeEventListener("resize", resize);
-      clearTimeout(timeoutId);
+      cancelAnimationFrame(animationId);
     };
-  }, []);
-
-  // Flash de luz aleatório para efeito de horror
-  useEffect(() => {
-    const triggerFlash = () => {
-      if (Math.random() > 0.85) {
-        setFlashActive(true);
-        setTimeout(() => setFlashActive(false), 50 + Math.random() * 100);
-      }
-    };
-
-    const interval = setInterval(triggerFlash, 8000 + Math.random() * 12000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
     <>
-      {/* Noise canvas */}
+      {/* Noise canvas - resolução reduzida para performance */}
       <canvas
         ref={canvasRef}
         className="pointer-events-none fixed inset-0 z-30"
-        style={{
-          opacity: 0.35,
-        }}
+        style={{ opacity: 0.3, imageRendering: "pixelated" }}
       />
 
-      {/* Efeito de flash de luz */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 z-40"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: flashActive ? 0.08 : 0 }}
-        transition={{ duration: 0.05 }}
-        style={{
-          background: "radial-gradient(circle at 50% 50%, rgba(74, 255, 74, 0.3), transparent 70%)",
-        }}
-      />
+      {/* Partículas de poeira - valores fixos */}
+      {isClient && (
+        <div className="pointer-events-none fixed inset-0 z-[25] overflow-hidden">
+          {PARTICLES.map((p, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-moss-400/20 animate-float-up"
+              style={{
+                width: p.w,
+                height: p.h,
+                left: `${p.l}%`,
+                top: `${p.t}%`,
+                animationDelay: `${i * 1.5}s`,
+                animationDuration: `${15 + i * 2}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Partículas de poeira flutuantes */}
-      <div className="pointer-events-none fixed inset-0 z-25 overflow-hidden">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-moss-400/20"
-            style={{
-              width: 1 + Math.random() * 2,
-              height: 1 + Math.random() * 2,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -100 - Math.random() * 200],
-              x: [(Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50],
-              opacity: [0, 0.5, 0],
-            }}
-            transition={{
-              duration: 15 + Math.random() * 20,
-              repeat: Infinity,
-              ease: "linear",
-              delay: Math.random() * 10,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Vinheta sutil pulsante */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 z-20"
-        animate={{
-          opacity: [0.5, 0.7, 0.5],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+      {/* Vinheta sutil */}
+      <div
+        className="pointer-events-none fixed inset-0 z-20 animate-vignette-pulse"
         style={{
           background: `radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, rgba(0, 5, 0, 0.4) 100%)`,
         }}
       />
 
-      {/* Linhas de scan muito sutis globais */}
+      {/* Linhas de scan sutis */}
       <div
-        className="pointer-events-none fixed inset-0 z-35"
+        className="pointer-events-none fixed inset-0 z-[35]"
         style={{
           background: `repeating-linear-gradient(
             0deg,
             transparent,
             transparent 3px,
-            rgba(0, 20, 0, 0.03) 3px,
-            rgba(0, 20, 0, 0.03) 6px
+            rgba(0, 20, 0, 0.02) 3px,
+            rgba(0, 20, 0, 0.02) 6px
           )`,
-          animation: "scanMove 12s linear infinite",
         }}
       />
+
+      <style jsx>{`
+        @keyframes float-up {
+          0%, 100% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+          }
+          10% {
+            opacity: 0.5;
+          }
+          90% {
+            opacity: 0.5;
+          }
+          100% {
+            transform: translateY(-100vh) translateX(20px);
+            opacity: 0;
+          }
+        }
+
+        @keyframes vignette-pulse {
+          0%, 100% {
+            opacity: 0.5;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+
+        .animate-float-up {
+          animation: float-up linear infinite;
+        }
+
+        .animate-vignette-pulse {
+          animation: vignette-pulse 8s ease-in-out infinite;
+        }
+      `}</style>
     </>
   );
 }

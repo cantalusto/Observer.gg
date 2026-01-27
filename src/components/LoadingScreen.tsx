@@ -30,6 +30,19 @@ export default function LoadingScreen() {
     setParticles(newParticles);
   }, []);
 
+  // Block scroll while loading
+  useEffect(() => {
+    if (isLoading) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isLoading]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);

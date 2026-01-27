@@ -1,16 +1,49 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useMotionValueEvent } from "motion/react";
+import { useRef, useEffect } from "react";
 import ObserverSection from "./ObserverSection";
+import { useCursor } from "@/contexts/CursorContext";
 
 export default function CinematicTransition() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { mode, setMode } = useCursor();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end end"],
   });
+
+  // Track scroll to change cursor mode
+  useMotionValueEvent(scrollYProgress, "change", (value) => {
+    // 0.1-0.6: Hidden (durante "Algo te observa")
+    // 0.6+: Possessed (monstro revelado)
+    if (value >= 0.1 && value < 0.6) {
+      setMode("hidden");
+    } else if (value >= 0.6) {
+      setMode("possessed");
+    } else {
+      setMode("normal");
+    }
+  });
+
+  // Reset cursor when scrolling above this section
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      // Se a seção está completamente abaixo da viewport, reset para normal
+      if (rect.top > window.innerHeight) {
+        if (mode !== "normal") {
+          setMode("normal");
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [mode, setMode]);
 
   // Controle de visibilidade - overlay só aparece quando seção entra na tela
   const overlayVisible = useTransform(

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Sans, Syne, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
 
 const instrumentSans = Instrument_Sans({
   variable: "--font-sans",
@@ -45,7 +46,7 @@ export default function RootLayout({
       <body
         className={`${instrumentSans.variable} ${syne.variable} ${playfair.variable} antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

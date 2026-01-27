@@ -1,75 +1,389 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useCursor } from "@/contexts/CursorContext";
 
 export default function CustomCursor() {
+  const { mode } = useCursor();
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [glitchOffset, setGlitchOffset] = useState({ x: 0, y: 0 });
+
+  // Use refs for positions to avoid re-renders
+  const mousePos = useRef({ x: 0, y: 0 });
+  const cursorPos = useRef({ x: 0, y: 0 });
+  const dotPos = useRef({ x: 0, y: 0 });
+  const rafId = useRef<number>(0);
+
+  // Glitch effect for possessed mode
   useEffect(() => {
-    // Atualiza CSS custom properties - mais performático que manipular DOM
+    if (mode !== "possessed") {
+      setGlitchOffset({ x: 0, y: 0 });
+      return;
+    }
+
+    const glitchInterval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        setGlitchOffset({
+          x: (Math.random() - 0.5) * 20,
+          y: (Math.random() - 0.5) * 20,
+        });
+        setTimeout(() => setGlitchOffset({ x: 0, y: 0 }), 50);
+      }
+    }, 100);
+
+    return () => clearInterval(glitchInterval);
+  }, [mode]);
+
+  // Animation loop - always running
+  const animate = useCallback(() => {
+    const cursor = cursorRef.current;
+    const dot = dotRef.current;
+
+    if (cursor && dot && isVisible) {
+      const easingOuter = mode === "possessed" ? 0.12 : 0.08;
+      const easingInner = mode === "possessed" ? 0.3 : 0.2;
+
+      cursorPos.current.x += (mousePos.current.x - cursorPos.current.x) * easingOuter;
+      cursorPos.current.y += (mousePos.current.y - cursorPos.current.y) * easingOuter;
+
+      dotPos.current.x += (mousePos.current.x - dotPos.current.x) * easingInner;
+      dotPos.current.y += (mousePos.current.y - dotPos.current.y) * easingInner;
+
+      const gx = mode === "possessed" ? glitchOffset.x : 0;
+      const gy = mode === "possessed" ? glitchOffset.y : 0;
+
+      cursor.style.left = `${cursorPos.current.x + gx}px`;
+      cursor.style.top = `${cursorPos.current.y + gy}px`;
+      dot.style.left = `${dotPos.current.x}px`;
+      dot.style.top = `${dotPos.current.y}px`;
+    }
+
+    rafId.current = requestAnimationFrame(animate);
+  }, [mode, isVisible, glitchOffset]);
+
+  useEffect(() => {
+    rafId.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId.current);
+  }, [animate]);
+
+  // Mouse tracking - always active
+  useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
-      document.documentElement.style.setProperty("--cursor-x", e.clientX + "px");
-      document.documentElement.style.setProperty("--cursor-y", e.clientY + "px");
+      mousePos.current = { x: e.clientX, y: e.clientY };
+
+      // Initialize cursor position on first move
+      if (!isVisible) {
+        cursorPos.current = { x: e.clientX, y: e.clientY };
+        dotPos.current = { x: e.clientX, y: e.clientY };
+        setIsVisible(true);
+      }
+    };
+
+    const onMouseDown = () => setIsClicking(true);
+    const onMouseUp = () => setIsClicking(false);
+
+    const onMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const isInteractive =
+        target.tagName === "A" ||
+        target.tagName === "BUTTON" ||
+        target.closest("a") ||
+        target.closest("button") ||
+        target.dataset.cursorHover === "true" ||
+        target.classList.contains("cursor-hover") ||
+        window.getComputedStyle(target).cursor === "pointer";
+
+      setIsHovering(isInteractive);
     };
 
     window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
-  }, []);
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mouseover", onMouseOver);
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("mouseover", onMouseOver);
+    };
+  }, [isVisible]);
+
+  const isPossessed = mode === "possessed";
+  const shouldShow = mode !== "hidden" && isVisible;
 
   return (
     <>
-      {/* Cursor via CSS puro - máxima performance */}
-      <div className="custom-cursor" />
-      <div className="custom-cursor-dot" />
+      {/* Main cursor ring */}
+      <div
+        ref={cursorRef}
+        className={`custom-cursor ${isHovering ? "hovering" : ""} ${isClicking ? "clicking" : ""} ${isPossessed ? "possessed" : ""}`}
+        style={{ opacity: shouldShow ? 1 : 0 }}
+      >
+        {isPossessed ? (
+          <>
+            <div className="cursor-eye-outer" />
+            <div className="cursor-eye-inner" />
+            <div className="cursor-eye-pupil" />
+            <div className="cursor-veins vein-1" />
+            <div className="cursor-veins vein-2" />
+            <div className="cursor-veins vein-3" />
+          </>
+        ) : (
+          <>
+            <div className="cursor-segment segment-1" />
+            <div className="cursor-segment segment-2" />
+            <div className="cursor-segment segment-3" />
+            <div className="cursor-inner-glow" />
+          </>
+        )}
+      </div>
+
+      {/* Center dot */}
+      <div
+        ref={dotRef}
+        className={`custom-cursor-dot ${isHovering ? "hovering" : ""} ${isClicking ? "clicking" : ""} ${isPossessed ? "possessed" : ""}`}
+        style={{ opacity: shouldShow ? 1 : 0 }}
+      />
 
       <style jsx global>{`
-        :root {
-          --cursor-x: -100px;
-          --cursor-y: -100px;
-        }
-
         * {
           cursor: none !important;
         }
 
+        /* ========== BASE ========== */
         .custom-cursor {
           position: fixed;
-          left: var(--cursor-x);
-          top: var(--cursor-y);
-          width: 36px;
-          height: 36px;
-          margin-left: -18px;
-          margin-top: -18px;
-          border: 2px solid rgba(74, 140, 74, 0.5);
-          border-radius: 50%;
+          width: 44px;
+          height: 44px;
           pointer-events: none;
-          z-index: 99999;
-          box-shadow: 0 0 15px rgba(74, 180, 74, 0.2);
-          transition: transform 0.1s ease-out, width 0.15s, height 0.15s, margin 0.15s, border-color 0.15s;
+          z-index: 99998;
+          transform: translate(-50%, -50%);
+          transition: opacity 0.2s ease;
         }
 
         .custom-cursor-dot {
           position: fixed;
-          left: var(--cursor-x);
-          top: var(--cursor-y);
           width: 6px;
           height: 6px;
-          margin-left: -3px;
-          margin-top: -3px;
-          background: rgba(200, 240, 200, 0.95);
+          background: rgba(200, 255, 200, 0.95);
           border-radius: 50%;
           pointer-events: none;
-          z-index: 100000;
-          box-shadow: 0 0 8px rgba(74, 180, 74, 0.6);
+          z-index: 99999;
+          transform: translate(-50%, -50%);
+          box-shadow:
+            0 0 6px rgba(124, 255, 124, 0.8),
+            0 0 12px rgba(124, 184, 124, 0.5),
+            0 0 20px rgba(74, 140, 74, 0.3);
+          transition: opacity 0.2s ease, width 0.2s ease, height 0.2s ease, background 0.2s ease;
         }
 
-        a:hover ~ .custom-cursor,
-        button:hover ~ .custom-cursor,
-        a .custom-cursor,
-        button .custom-cursor {
+        /* ========== NORMAL MODE ========== */
+        .cursor-segment {
+          position: absolute;
+          inset: 0;
+          border: 2px solid transparent;
+          border-radius: 50%;
+          border-top-color: rgba(124, 184, 124, 0.7);
+          animation: cursor-rotate 3s linear infinite;
+        }
+
+        .segment-1 {
+          animation-duration: 3s;
+          border-top-color: rgba(124, 184, 124, 0.8);
+        }
+
+        .segment-2 {
+          animation-duration: 2s;
+          animation-direction: reverse;
+          border-top-color: rgba(100, 200, 100, 0.5);
+          inset: 4px;
+        }
+
+        .segment-3 {
+          animation-duration: 4s;
+          border-top-color: rgba(74, 140, 74, 0.4);
+          inset: -4px;
+        }
+
+        .cursor-inner-glow {
+          position: absolute;
+          inset: 8px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(124, 184, 124, 0.1) 0%, transparent 70%);
+          animation: cursor-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes cursor-rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes cursor-pulse {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .custom-cursor.hovering {
+          width: 56px;
+          height: 56px;
+          transition: width 0.2s ease, height 0.2s ease;
+        }
+
+        .custom-cursor.hovering .cursor-segment {
+          animation-duration: 0.8s !important;
+          border-top-color: rgba(150, 255, 150, 0.9);
+        }
+
+        .custom-cursor-dot.hovering {
+          width: 10px;
+          height: 10px;
+          background: rgba(150, 255, 150, 1);
+          box-shadow:
+            0 0 10px rgba(150, 255, 150, 1),
+            0 0 20px rgba(124, 255, 124, 0.8),
+            0 0 30px rgba(100, 200, 100, 0.5);
+        }
+
+        .custom-cursor-dot.clicking {
+          width: 4px;
+          height: 4px;
+          background: rgba(255, 255, 255, 1);
+        }
+
+        /* ========== POSSESSED MODE ========== */
+        .custom-cursor.possessed {
           width: 50px;
           height: 50px;
-          margin-left: -25px;
-          margin-top: -25px;
-          border-color: rgba(124, 184, 124, 0.8);
+        }
+
+        .cursor-eye-outer {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          border: 2px solid rgba(100, 180, 100, 0.6);
+          background: radial-gradient(ellipse at center,
+            rgba(20, 40, 20, 0.9) 0%,
+            rgba(10, 20, 10, 0.95) 60%,
+            rgba(5, 10, 5, 1) 100%
+          );
+          animation: eye-dilate 2s ease-in-out infinite;
+          box-shadow:
+            inset 0 0 15px rgba(0, 0, 0, 0.8),
+            0 0 20px rgba(74, 180, 74, 0.4),
+            0 0 40px rgba(180, 60, 60, 0.2);
+        }
+
+        @keyframes eye-dilate {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+
+        .cursor-eye-inner {
+          position: absolute;
+          inset: 12px;
+          border-radius: 50%;
+          background: radial-gradient(circle at 40% 40%,
+            rgba(80, 180, 80, 0.9) 0%,
+            rgba(50, 140, 50, 0.8) 30%,
+            rgba(30, 80, 30, 0.9) 70%,
+            rgba(20, 50, 20, 1) 100%
+          );
+          animation: iris-pulse 1.5s ease-in-out infinite;
+          box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+        }
+
+        @keyframes iris-pulse {
+          0%, 100% { opacity: 0.9; }
+          50% { opacity: 1; }
+        }
+
+        .cursor-eye-pupil {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 8px;
+          height: 14px;
+          margin-left: -4px;
+          margin-top: -7px;
+          background: rgba(0, 0, 0, 0.95);
+          border-radius: 50%;
+          animation: pupil-contract 3s ease-in-out infinite;
+          box-shadow:
+            0 0 5px rgba(0, 0, 0, 1),
+            0 0 15px rgba(100, 255, 100, 0.3);
+        }
+
+        @keyframes pupil-contract {
+          0%, 100% { transform: scaleY(1); }
+          30% { transform: scaleY(0.6); }
+          60% { transform: scaleY(1.1); }
+        }
+
+        .cursor-veins {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          opacity: 0.5;
+          animation: vein-pulse 2s ease-in-out infinite;
+        }
+
+        .vein-1 {
+          background: linear-gradient(45deg, transparent 40%, rgba(180, 60, 60, 0.4) 50%, transparent 60%);
+        }
+
+        .vein-2 {
+          background: linear-gradient(135deg, transparent 40%, rgba(160, 50, 50, 0.3) 50%, transparent 60%);
+          animation-delay: 0.5s;
+        }
+
+        .vein-3 {
+          background: linear-gradient(-45deg, transparent 35%, rgba(140, 40, 40, 0.35) 50%, transparent 65%);
+          animation-delay: 1s;
+        }
+
+        @keyframes vein-pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.6; }
+        }
+
+        .custom-cursor-dot.possessed {
+          width: 4px;
+          height: 4px;
+          background: rgba(100, 255, 100, 1);
+          box-shadow:
+            0 0 8px rgba(100, 255, 100, 0.9),
+            0 0 15px rgba(60, 180, 60, 0.7),
+            0 0 25px rgba(100, 255, 100, 0.4);
+          animation: possessed-dot-pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes possessed-dot-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+
+        .custom-cursor.possessed.hovering .cursor-eye-outer {
+          border-color: rgba(200, 80, 80, 0.8);
+          box-shadow:
+            inset 0 0 15px rgba(0, 0, 0, 0.8),
+            0 0 30px rgba(200, 80, 80, 0.6),
+            0 0 50px rgba(100, 255, 100, 0.3);
+        }
+
+        .custom-cursor.possessed.hovering .cursor-eye-pupil {
+          transform: scaleY(1.3) scaleX(1.2);
+        }
+
+        /* Hide on touch devices */
+        @media (hover: none) and (pointer: coarse) {
+          * { cursor: auto !important; }
+          .custom-cursor,
+          .custom-cursor-dot { display: none !important; }
         }
       `}</style>
     </>
