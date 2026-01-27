@@ -1,8 +1,167 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useCursor } from "@/contexts/CursorContext";
+
+// ============================================
+// OLHO ASSUSTADOR QUE SEGUE O MOUSE
+// ============================================
+function ScaryEye({ 
+  x, 
+  y, 
+  size = 40,
+  intensity = 1,
+  delay = 0,
+}: { 
+  x: number; 
+  y: number; 
+  size?: number;
+  intensity?: number;
+  delay?: number;
+}) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
+  const [isNearButton, setIsNearButton] = useState(false);
+  const eyeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      // Calcula a posição do olho na tela
+      const eyeCenterX = (x / 100) * window.innerWidth;
+      const eyeCenterY = (y / 100) * window.innerHeight;
+      
+      const deltaX = e.clientX - eyeCenterX;
+      const deltaY = e.clientY - eyeCenterY;
+      const angle = Math.atan2(deltaY, deltaX);
+      const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 30, size * 0.15);
+      
+      setPupilOffset({
+        x: Math.cos(angle) * distance,
+        y: Math.sin(angle) * distance,
+      });
+      
+      // Verifica se está perto do botão (centro da tela)
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const distanceToCenter = Math.sqrt(
+        Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
+      );
+      setIsNearButton(distanceToCenter < 200);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [x, y, size]);
+
+  // Não renderiza nada no servidor para evitar hydration mismatch
+  if (!isMounted) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      ref={eyeRef}
+      className="absolute pointer-events-none"
+      style={{ 
+        left: `${x}%`, 
+        top: `${y}%`,
+        transform: 'translate(-50%, -50%)',
+      }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ 
+        opacity: intensity,
+        scale: 1,
+        x: isNearButton ? [0, -2, 2, -1, 1, 0] : 0,
+        y: isNearButton ? [0, 1, -1, 2, -2, 0] : 0,
+      }}
+      transition={{ 
+        opacity: { delay, duration: 0.5 },
+        scale: { delay, duration: 0.5, type: "spring" },
+        x: { repeat: Infinity, duration: 0.15, ease: "linear" },
+        y: { repeat: Infinity, duration: 0.12, ease: "linear" },
+      }}
+    >
+      {/* Glow externo */}
+      <div 
+        className="absolute rounded-full"
+        style={{
+          width: size * 2,
+          height: size * 2,
+          left: -size / 2,
+          top: -size / 2,
+          background: `radial-gradient(circle, rgba(74, 200, 74, ${isNearButton ? 0.3 : 0.15}) 0%, transparent 70%)`,
+          filter: 'blur(10px)',
+        }}
+      />
+      
+      {/* Olho externo */}
+      <div 
+        className="relative rounded-full overflow-hidden"
+        style={{
+          width: size,
+          height: size * 0.6,
+          background: 'radial-gradient(ellipse, #0a0f0a 0%, #030503 100%)',
+          boxShadow: `
+            inset 0 0 ${size/4}px rgba(0,0,0,0.8),
+            0 0 ${size/3}px rgba(74, 180, 74, ${isNearButton ? 0.6 : 0.3})
+          `,
+          border: '1px solid rgba(74, 140, 74, 0.3)',
+        }}
+      >
+        {/* Íris */}
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: size * 0.45,
+            height: size * 0.45,
+            left: '50%',
+            top: '50%',
+            x: pupilOffset.x - (size * 0.225),
+            y: pupilOffset.y - (size * 0.225),
+            background: `radial-gradient(circle, #2d5a2d 0%, #1a3a1a 50%, #0d1f0d 100%)`,
+            boxShadow: `0 0 ${size/6}px rgba(74, 200, 74, 0.5)`,
+          }}
+        >
+          {/* Pupila */}
+          <div 
+            className="absolute rounded-full"
+            style={{
+              width: size * 0.2,
+              height: size * 0.2,
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: '#000',
+              boxShadow: `0 0 ${size/8}px rgba(74, 255, 74, 0.8)`,
+            }}
+          >
+            {/* Reflexo */}
+            <div 
+              className="absolute rounded-full bg-white/60"
+              style={{
+                width: size * 0.06,
+                height: size * 0.06,
+                top: '20%',
+                right: '20%',
+              }}
+            />
+          </div>
+        </motion.div>
+        
+        {/* Veias do olho */}
+        <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 100 60">
+          <path d="M0,30 Q20,20 35,30" stroke="#3a1a1a" strokeWidth="0.5" fill="none"/>
+          <path d="M0,35 Q25,45 40,35" stroke="#3a1a1a" strokeWidth="0.3" fill="none"/>
+          <path d="M100,30 Q80,20 65,30" stroke="#3a1a1a" strokeWidth="0.5" fill="none"/>
+          <path d="M100,35 Q75,45 60,35" stroke="#3a1a1a" strokeWidth="0.3" fill="none"/>
+        </svg>
+      </div>
+    </motion.div>
+  );
+}
 
 // ============================================
 // BOTÃO CTA ESPECIAL
@@ -637,12 +796,40 @@ function CTAScreen({
   // Tela 6: 90% - 100%
   const opacity = useTransform(progress, [0.90, 0.92, 1], [0, 1, 1]);
 
+  // Posições dos olhos espalhados pela tela
+  const eyePositions = [
+    { x: 8, y: 20, size: 55, intensity: 0.9, delay: 0 },
+    { x: 92, y: 15, size: 45, intensity: 0.8, delay: 0.1 },
+    { x: 5, y: 75, size: 50, intensity: 0.85, delay: 0.2 },
+    { x: 95, y: 80, size: 60, intensity: 0.9, delay: 0.15 },
+    { x: 15, y: 45, size: 35, intensity: 0.6, delay: 0.3 },
+    { x: 85, y: 50, size: 40, intensity: 0.7, delay: 0.25 },
+    { x: 3, y: 90, size: 30, intensity: 0.5, delay: 0.4 },
+    { x: 97, y: 92, size: 35, intensity: 0.55, delay: 0.35 },
+    { x: 20, y: 10, size: 25, intensity: 0.4, delay: 0.5 },
+    { x: 80, y: 8, size: 28, intensity: 0.45, delay: 0.45 },
+    { x: 12, y: 60, size: 32, intensity: 0.5, delay: 0.55 },
+    { x: 88, y: 65, size: 38, intensity: 0.6, delay: 0.5 },
+  ];
+
   return (
     <motion.div
       className="absolute inset-0 flex flex-col items-center justify-center px-8"
       style={{ opacity }}
     >
-      <div className="text-center">
+      {/* Olhos assustadores */}
+      {eyePositions.map((eye, index) => (
+        <ScaryEye
+          key={index}
+          x={eye.x}
+          y={eye.y}
+          size={eye.size}
+          intensity={eye.intensity}
+          delay={eye.delay}
+        />
+      ))}
+
+      <div className="text-center relative z-10">
         <motion.h2
           className="font-[family-name:var(--font-serif)] text-3xl md:text-5xl lg:text-6xl font-medium italic text-white leading-tight"
           style={{

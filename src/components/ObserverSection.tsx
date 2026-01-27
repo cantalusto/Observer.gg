@@ -185,9 +185,20 @@ export default function ObserverSection() {
       {/* Scan lines */}
       <div className="absolute inset-0 pointer-events-none scan-lines" />
 
-      {/* Vinheta FORTE - foco no monstro e texto */}
+      {/* Vinheta DESKTOP - mais suave */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none hidden md:block"
+        style={{
+          background: `
+            radial-gradient(ellipse 70% 60% at 50% 50%, transparent 20%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0.85) 100%),
+            radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(4, 6, 4, 0.6) 100%)
+          `,
+        }}
+      />
+
+      {/* Vinheta MOBILE - mais forte para focar no monstro */}
+      <div
+        className="absolute inset-0 pointer-events-none md:hidden"
         style={{
           background: `
             radial-gradient(ellipse 50% 40% at 50% 40%, transparent 5%, rgba(0, 0, 0, 0.4) 30%, rgba(0, 0, 0, 0.8) 55%, #030503 75%)
@@ -195,11 +206,11 @@ export default function ObserverSection() {
         }}
       />
       
-      {/* Bordas extras escuras */}
-      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-[#030503] via-[#030503]/80 to-transparent pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#030503] via-[#030503]/60 to-transparent pointer-events-none" />
-      <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-[#030503] via-[#030503]/70 to-transparent pointer-events-none" />
-      <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-[#030503] via-[#030503]/70 to-transparent pointer-events-none" />
+      {/* Bordas extras escuras - apenas mobile */}
+      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-[#030503] via-[#030503]/80 to-transparent pointer-events-none md:hidden" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#030503] via-[#030503]/60 to-transparent pointer-events-none md:hidden" />
+      <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-[#030503] via-[#030503]/70 to-transparent pointer-events-none md:hidden" />
+      <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-[#030503] via-[#030503]/70 to-transparent pointer-events-none md:hidden" />
 
       {/* Fog layers */}
       <div className="absolute inset-0 pointer-events-none">
@@ -429,6 +440,23 @@ export default function ObserverSection() {
           <p className="mt-3 text-xs uppercase tracking-[0.2em] text-moss-400/60 md:mt-4 md:text-sm md:tracking-[0.3em]">
             Scroll para descobrir
           </p>
+          
+          {/* Animated scroll indicator */}
+          <div className="mt-4 flex flex-col items-center gap-1 md:mt-6">
+            {/* Mouse icon */}
+            <div className="relative h-8 w-5 rounded-full border-2 border-moss-500/40 md:h-10 md:w-6">
+              <div className="scroll-wheel absolute left-1/2 top-2 h-2 w-1 -translate-x-1/2 rounded-full bg-moss-400/60" />
+            </div>
+            {/* Chevrons */}
+            <div className="flex flex-col items-center -space-y-1 scroll-chevrons">
+              <svg className="h-3 w-3 text-moss-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+              <svg className="h-3 w-3 text-moss-500/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -445,6 +473,36 @@ export default function ObserverSection() {
           -webkit-text-fill-color: transparent;
           background-clip: text;
           animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        .scroll-wheel {
+          animation: scrollWheel 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes scrollWheel {
+          0%, 100% {
+            opacity: 0.6;
+            transform: translateX(-50%) translateY(0);
+          }
+          50% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(4px);
+          }
+        }
+        
+        .scroll-chevrons {
+          animation: scrollChevrons 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes scrollChevrons {
+          0%, 100% {
+            opacity: 0.5;
+            transform: translateY(0);
+          }
+          50% {
+            opacity: 1;
+            transform: translateY(3px);
+          }
         }
 
         @keyframes particleFloat {
