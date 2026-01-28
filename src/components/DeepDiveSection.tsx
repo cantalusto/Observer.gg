@@ -880,8 +880,17 @@ export default function DeepDiveSection() {
         {/* CTA Final */}
         <CTAScreen progress={scrollYProgress} />
 
-        {/* Indicador de progresso lateral */}
-        <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col gap-3">
+        {/* Indicador de progresso lateral - só visível durante esta seção */}
+        <motion.div
+          className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col gap-3"
+          style={{
+            opacity: useTransform(
+              scrollYProgress,
+              [0, 0.02, 0.95, 1],
+              [0, 1, 1, 0]
+            ),
+          }}
+        >
           {[0, 0.18, 0.38, 0.56, 0.74, 0.90].map((threshold, i) => (
             <motion.div
               key={i}
@@ -895,7 +904,7 @@ export default function DeepDiveSection() {
               }}
             />
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
