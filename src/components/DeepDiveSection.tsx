@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef, useState, useEffect } from "react";
+import Link from "next/link";
 import { useCursor } from "@/contexts/CursorContext";
 
 // ============================================
@@ -166,142 +167,78 @@ function ScaryEye({
 // ============================================
 // BOTÃO CTA ESPECIAL
 // ============================================
-function ScaryButton({ children }: { children: React.ReactNode }) {
-  const { mode, setMode, isClicking } = useCursor();
+function ScaryButton({ children, href }: { children: React.ReactNode; href?: string }) {
+  const { mode, setMode } = useCursor();
   const [isHovered, setIsHovered] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const previousModeRef = useRef(mode);
+
+  const handleMouseEnter = () => {
+    previousModeRef.current = mode;
+    setIsHovered(true);
+    setMode("cta");
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setMode(previousModeRef.current);
+  };
+
+  const buttonClasses = `
+    group relative inline-flex items-center justify-center gap-4
+    px-8 py-5 rounded-xl
+    bg-moss-900/60 hover:bg-moss-800/70
+    border-2 border-moss-500/40 hover:border-moss-400/60
+    text-lg font-medium text-moss-100 hover:text-white
+    transition-all duration-300
+    shadow-[0_0_30px_rgba(74,124,74,0.1)] hover:shadow-[0_0_50px_rgba(74,124,74,0.25)]
+  `;
+
+  const content = (
+    <>
+      <span className="relative z-10">{children}</span>
+
+      {/* Arrow icon */}
+      <svg
+        className={`w-5 h-5 transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+      </svg>
+
+      {/* Glow effect on hover */}
+      <div
+        className={`
+          absolute inset-0 rounded-xl transition-opacity duration-500
+          bg-gradient-to-r from-moss-500/10 via-moss-400/20 to-moss-500/10
+          ${isHovered ? 'opacity-100' : 'opacity-0'}
+        `}
+      />
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={buttonClasses}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {content}
+      </Link>
+    );
+  }
 
   return (
     <button
-      ref={buttonRef}
-      className="group relative overflow-hidden"
-      onMouseEnter={() => {
-        previousModeRef.current = mode;
-        setIsHovered(true);
-        setMode("cta");
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setMode(previousModeRef.current);
-      }}
+      className={buttonClasses}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Fundo principal */}
-      <div className={`
-        relative z-10 px-10 py-5 rounded-lg font-medium text-lg
-        transition-all duration-300 ease-out
-        ${isHovered ? 'bg-transparent' : 'bg-moss-900/80'}
-        border-2 border-moss-500/50
-        ${isHovered ? 'border-moss-400' : ''}
-        ${isClicking ? 'scale-95' : ''}
-      `}>
-        {/* Texto */}
-        <span className={`
-          relative z-20 transition-all duration-300
-          ${isHovered ? 'text-white' : 'text-moss-200'}
-          ${isClicking ? 'text-moss-300' : ''}
-        `}>
-          {children}
-        </span>
-      </div>
-
-      {/* Glow de fundo no hover */}
-      <div className={`
-        absolute inset-0 rounded-lg transition-opacity duration-500
-        bg-gradient-to-r from-moss-600/20 via-moss-500/30 to-moss-600/20
-        ${isHovered ? 'opacity-100' : 'opacity-0'}
-      `} />
-
-      {/* Borda animada */}
-      <div className={`
-        absolute inset-0 rounded-lg transition-opacity duration-300
-        ${isHovered ? 'opacity-100' : 'opacity-0'}
-      `}>
-        <div className="absolute inset-0 rounded-lg border-2 border-moss-400/60 animate-pulse" />
-      </div>
-
-      {/* Linhas de scan */}
-      <div className={`
-        absolute inset-0 overflow-hidden rounded-lg pointer-events-none
-        ${isHovered ? 'opacity-100' : 'opacity-0'}
-        transition-opacity duration-300
-      `}>
-        <div 
-          className="absolute w-full h-px bg-gradient-to-r from-transparent via-moss-400/80 to-transparent"
-          style={{
-            animation: isHovered ? 'scan-line 2s linear infinite' : 'none',
-            top: '0%',
-          }}
-        />
-        <div 
-          className="absolute w-full h-px bg-gradient-to-r from-transparent via-moss-400/40 to-transparent"
-          style={{
-            animation: isHovered ? 'scan-line 2s linear infinite 0.5s' : 'none',
-            top: '0%',
-          }}
-        />
-      </div>
-
-      {/* Partículas flutuantes */}
-      {isHovered && (
-        <div className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-moss-400 rounded-full animate-float-particle"
-              style={{
-                left: `${15 + i * 15}%`,
-                animationDelay: `${i * 0.2}s`,
-                opacity: 0.6,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Efeito de clique - onda de energia */}
-      <div className={`
-        absolute inset-0 rounded-lg pointer-events-none
-        ${isClicking ? 'animate-click-ripple' : ''}
-      `}>
-        <div className={`
-          absolute inset-0 rounded-lg border-2 border-moss-300
-          ${isClicking ? 'opacity-100 scale-110' : 'opacity-0 scale-100'}
-          transition-all duration-200
-        `} />
-      </div>
-
-      {/* Styles */}
-      <style jsx>{`
-        @keyframes scan-line {
-          0% { top: -10%; }
-          100% { top: 110%; }
-        }
-        
-        @keyframes float-particle {
-          0%, 100% { 
-            transform: translateY(100%) scale(0);
-            opacity: 0;
-          }
-          50% { 
-            transform: translateY(-50%) scale(1);
-            opacity: 0.8;
-          }
-        }
-        
-        .animate-float-particle {
-          animation: float-particle 2s ease-in-out infinite;
-        }
-        
-        @keyframes click-ripple {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(1.5); opacity: 0; }
-        }
-        
-        .animate-click-ripple > div {
-          animation: click-ripple 0.4s ease-out;
-        }
-      `}</style>
+      {content}
     </button>
   );
 }
@@ -778,54 +715,59 @@ function CTAScreen({
 
   return (
     <motion.div
-      className="absolute inset-0 flex flex-col items-center justify-center px-8"
+      className="absolute inset-0"
       style={{ opacity }}
     >
-      {/* Olhos assustadores */}
-      {eyePositions.map((eye, index) => (
-        <ScaryEye
-          key={index}
-          x={eye.x}
-          y={eye.y}
-          size={eye.size}
-          intensity={eye.intensity}
-          delay={eye.delay}
-        />
-      ))}
+      {/* Container dos olhos - separado do conteúdo */}
+      <div className="absolute inset-0 pointer-events-none">
+        {eyePositions.map((eye, index) => (
+          <ScaryEye
+            key={index}
+            x={eye.x}
+            y={eye.y}
+            size={eye.size}
+            intensity={eye.intensity}
+            delay={eye.delay}
+          />
+        ))}
+      </div>
 
-      <div className="text-center relative z-10">
-        <motion.h2
-          className="font-[family-name:var(--font-serif)] text-3xl md:text-5xl lg:text-6xl font-medium italic text-white leading-tight"
-          style={{
-            opacity: useTransform(progress, [0.91, 0.93], [0, 1]),
-            y: useTransform(progress, [0.91, 0.93], [30, 0]),
-          }}
-        >
-          Veja o que você
-          <br />
-          <span className="text-moss-400">não está vendo.</span>
-        </motion.h2>
+      {/* Conteúdo central */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-8">
+        <div className="text-center relative z-10">
+          <motion.h2
+            className="font-[family-name:var(--font-serif)] text-3xl md:text-5xl lg:text-6xl font-medium italic text-white leading-tight"
+            style={{
+              opacity: useTransform(progress, [0.91, 0.93], [0, 1]),
+              y: useTransform(progress, [0.91, 0.93], [30, 0]),
+            }}
+          >
+            Veja o que você
+            <br />
+            <span className="text-moss-400">não está vendo.</span>
+          </motion.h2>
 
-        <motion.div
-          className="mt-12"
-          style={{
-            opacity: useTransform(progress, [0.94, 0.96], [0, 1]),
-            y: useTransform(progress, [0.94, 0.96], [20, 0]),
-          }}
-        >
-          <ScaryButton>
-            Analisar minha última partida
-          </ScaryButton>
-        </motion.div>
+          <motion.div
+            className="mt-12"
+            style={{
+              opacity: useTransform(progress, [0.94, 0.96], [0, 1]),
+              y: useTransform(progress, [0.94, 0.96], [20, 0]),
+            }}
+          >
+            <ScaryButton href="/auth">
+              Analisar minha última partida
+            </ScaryButton>
+          </motion.div>
 
-        <motion.p
-          className="mt-8 text-sm text-moss-600 uppercase tracking-widest"
-          style={{
-            opacity: useTransform(progress, [0.97, 1], [0, 1]),
-          }}
-        >
-          A verdade te espera
-        </motion.p>
+          <motion.p
+            className="mt-8 text-sm text-moss-600 uppercase tracking-widest"
+            style={{
+              opacity: useTransform(progress, [0.97, 1], [0, 1]),
+            }}
+          >
+            A verdade te espera
+          </motion.p>
+        </div>
       </div>
     </motion.div>
   );

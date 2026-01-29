@@ -444,8 +444,8 @@ export default function ObserverSection() {
           {/* Animated scroll indicator */}
           <div className="mt-4 flex flex-col items-center gap-1 md:mt-6">
             {/* Mouse icon */}
-            <div className="relative h-8 w-5 rounded-full border-2 border-moss-500/40 md:h-10 md:w-6">
-              <div className="scroll-wheel absolute left-1/2 top-2 h-2 w-1 -translate-x-1/2 rounded-full bg-moss-400/60" />
+            <div className="flex h-8 w-5 justify-center rounded-full border-2 border-moss-500/40 md:h-10 md:w-6">
+              <div className="scroll-wheel mt-1.5 h-2 w-1 rounded-full bg-moss-400/60 md:mt-2" />
             </div>
             {/* Chevrons */}
             <div className="flex flex-col items-center -space-y-1 scroll-chevrons">
@@ -478,15 +478,15 @@ export default function ObserverSection() {
         .scroll-wheel {
           animation: scrollWheel 1.5s ease-in-out infinite;
         }
-        
+
         @keyframes scrollWheel {
           0%, 100% {
             opacity: 0.6;
-            transform: translateX(-50%) translateY(0);
+            transform: translateY(0);
           }
           50% {
             opacity: 1;
-            transform: translateX(-50%) translateY(4px);
+            transform: translateY(4px);
           }
         }
         

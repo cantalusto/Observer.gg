@@ -57,7 +57,6 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <VideoBackground
           src="/backgroudnvideo.mp4"
-          poster="/hero-poster.jpg"
         />
 
         {/* Grid overlay on top of video */}
@@ -147,7 +146,7 @@ export default function Hero() {
 
             {/* CTA Button */}
             <motion.a
-              href="#"
+              href="/auth"
               className="group relative z-[60] mt-8 flex w-full max-w-xs items-center justify-center gap-4 overflow-hidden rounded-md border border-moss-700/30 bg-moss-950/95 px-5 py-4 shadow-[0_0_30px_rgba(74,124,74,0.15)] backdrop-blur-md transition-all hover:border-moss-600/50 hover:bg-moss-900/90 hover:shadow-[0_0_40px_rgba(74,124,74,0.25)] sm:mt-10 sm:w-auto sm:max-w-none sm:justify-between sm:gap-8 sm:px-6 md:mt-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

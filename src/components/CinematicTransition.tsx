@@ -104,7 +104,7 @@ export default function CinematicTransition() {
   );
 
   return (
-    <section ref={containerRef} className="relative h-[350vh]">
+    <section id="diferenciais" ref={containerRef} className="relative h-[350vh]">
       {/* Observer Section - por baixo */}
       <div className="sticky top-0 h-screen">
         <ObserverSection />

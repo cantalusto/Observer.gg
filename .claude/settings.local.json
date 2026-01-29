@@ -5,7 +5,8 @@
       "Bash(npm run dev:*)",
       "Bash(dir:*)",
       "Bash(dir \"C:\\\\Users\\\\Lucas\\\\Documents\\\\developer\\\\watchergg\\\\monsterscrobbing\")",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx prisma generate:*)"
     ]
   }
 }

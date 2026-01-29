@@ -210,6 +210,7 @@ export default function StorytellingSection() {
 
   return (
     <section
+      id="servicos"
       ref={containerRef}
       className="relative bg-[#040604]"
       style={{ height: `${totalHeight}vh` }}
