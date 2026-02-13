@@ -2,7 +2,8 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import FormInput from "./FormInput";
 import FormButton from "./FormButton";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
@@ -12,6 +13,7 @@ interface RegisterFormProps {
 }
 
 export default function RegisterForm({ onSuccess }: RegisterFormProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<RegisterInput>>({});
   const [generalError, setGeneralError] = useState("");
@@ -33,7 +35,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
     if (!validation.success) {
       const fieldErrors: Partial<RegisterInput> = {};
-      validation.error.errors.forEach((err) => {
+      validation.error.issues.forEach((err) => {
         const field = err.path[0] as keyof RegisterInput;
         fieldErrors[field] = err.message;
       });
@@ -44,30 +46,29 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const supabase = createClient();
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            name: data.name,
+          },
+        },
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        setGeneralError(result.error || "Ocorreu um erro no registro");
+      if (error) {
+        if (error.message.includes("already registered")) {
+          setGeneralError("Este email já está cadastrado");
+        } else {
+          setGeneralError(error.message);
+        }
         return;
       }
 
-      const signInResult = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
-      if (signInResult?.error) {
-        onSuccess?.();
-      } else {
-        window.location.href = "/";
-      }
+      onSuccess?.();
+      router.push("/");
+      router.refresh();
     } catch {
       setGeneralError("Ocorreu um erro. Tente novamente.");
     } finally {

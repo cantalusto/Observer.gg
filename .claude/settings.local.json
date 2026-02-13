@@ -6,7 +6,12 @@
       "Bash(dir:*)",
       "Bash(dir \"C:\\\\Users\\\\Lucas\\\\Documents\\\\developer\\\\watchergg\\\\monsterscrobbing\")",
       "Bash(npx tsc:*)",
-      "Bash(npx prisma generate:*)"
+      "Bash(npx prisma generate:*)",
+      "Bash(tree:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run build)",
+      "WebFetch(domain:raw.communitydragon.org)",
+      "WebSearch"
     ]
   }
 }

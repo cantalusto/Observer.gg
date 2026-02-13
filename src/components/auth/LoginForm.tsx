@@ -2,8 +2,8 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import FormInput from "./FormInput";
 import FormButton from "./FormButton";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
@@ -29,7 +29,7 @@ export default function LoginForm() {
 
     if (!validation.success) {
       const fieldErrors: Partial<LoginInput> = {};
-      validation.error.errors.forEach((err) => {
+      validation.error.issues.forEach((err) => {
         const field = err.path[0] as keyof LoginInput;
         fieldErrors[field] = err.message;
       });
@@ -40,14 +40,18 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-        redirect: false,
       });
 
-      if (result?.error) {
-        setGeneralError("Email ou senha incorretos");
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          setGeneralError("Email ou senha incorretos");
+        } else {
+          setGeneralError(error.message);
+        }
       } else {
         router.push("/");
         router.refresh();

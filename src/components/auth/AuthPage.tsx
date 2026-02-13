@@ -6,7 +6,6 @@ import Link from "next/link";
 import AuthToggle from "./AuthToggle";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
-import RiotAuthButton from "./RiotAuthButton";
 
 function AnimatedBackground() {
   return (
@@ -415,20 +414,6 @@ export default function AuthPage() {
               )}
             </AnimatePresence>
 
-            {/* Divider */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-moss-700/40" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-moss-950/80 px-4 text-xs uppercase tracking-widest text-moss-600">
-                  ou
-                </span>
-              </div>
-            </div>
-
-            {/* Riot OAuth */}
-            <RiotAuthButton />
           </div>
 
           {/* Footer */}

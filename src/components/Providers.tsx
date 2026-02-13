@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { SessionProvider } from "next-auth/react";
 import { CursorProvider } from "@/contexts/CursorContext";
 import Lenis from "lenis";
 
@@ -25,9 +24,5 @@ export default function Providers({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return (
-    <SessionProvider>
-      <CursorProvider>{children}</CursorProvider>
-    </SessionProvider>
-  );
+  return <CursorProvider>{children}</CursorProvider>;
 }
